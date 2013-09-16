@@ -3,7 +3,7 @@
 Plugin Name: PMPro Infusionsoft Integration
 Plugin URI: http://www.paidmembershipspro.com/pmpro-infusionsoft/
 Description: Sync your WordPress users and members with Infusionsoft contacts.
-Version: .1
+Version: .2
 Author: Stranger Studios
 Author URI: http://www.strangerstudios.com
 */
@@ -31,33 +31,82 @@ Author URI: http://www.strangerstudios.com
 */
 //init
 function pmprois_init()
-{
-	//include IXR_Client class if we don't have it already
-	if(!class_exists("IXR_Client"))
-	{
-		require_once(ABSPATH . "/wp-includes/class-IXR.php");
-	}
-	
+{		
 	//get options for below
 	$options = get_option("pmprois_options");
-	
+		
 	//setup hooks for new users	
 	if(!empty($options['users_tags']))
 		add_action("user_register", "pmprois_user_register");
 	
 	//setup hooks for PMPro levels
-	pmprois_getPMProLevels();
-	global $pmprois_levels;
+	pmprois_getPMProLevels();	
+	global $pmprois_levels;		
 	if(!empty($pmprois_levels))
-	{		
+	{				
 		add_action("pmpro_after_change_membership_level", "pmprois_pmpro_after_change_membership_level", 10, 2);
 	}
 }
 add_action("init", "pmprois_init");
 
+//this is the function that integrates with Infusionsoft
+function pmprois_updateInfusionsoftContact($email, $tags = NULL)
+{
+	$options = get_option("pmprois_options");			
+	
+	//pre tags
+	if(!is_array($tags))
+	{
+		$tags = str_replace(" ", "", $tags);
+		$tags = explode(",", $tags);
+	}
+	
+	require_once(dirname(__FILE__) . "/includes/isdk.php");
+	require_once(ABSPATH . "/krumo/class.krumo.php");
+	
+	$app = new iSDK("izm88326", "infusion", $options['api_key']);
+	
+	$returnFields = array('Id');
+    $dups = $app->findByEmail($email, $returnFields);			
+		
+	//no? add them
+	if(empty($dups))
+	{		
+		$contact_id = $app->addCon(array("Email"=>$email));
+	}
+	else
+	{		
+		$contact_id = $dups[0]['Id'];
+	}
+	
+	if(!empty($contact_id))
+	{		
+		//now that we have an id/contact, lets add all tags		
+		if(is_array($tags))
+		{
+			foreach($tags as $tag)
+			{
+				if(is_numeric($tag))
+				{					
+					$app->grpAssign($contact_id, $tag);
+				}
+				else
+				{
+					//$group_id = GET GROUP ID
+					//$app->grpAssign($contact_id, $group_id);
+				}
+			}
+		}		
+		
+		return $contact_id;
+	}
+	else
+		return false;
+}
+
 //subscribe users when they register
 function pmprois_user_register($user_id)
-{
+{	
 	$options = get_option("pmprois_options");
 	
 	//should we add them to any lists?
@@ -65,10 +114,9 @@ function pmprois_user_register($user_id)
 	{
 		//get user info
 		$list_user = get_userdata($user_id);
-		
-		//find the user or add them as a contact
-		
-		//tag the user
+			
+		//add/update the contact and assign the tag
+		pmprois_updateInfusionsoftContact($list_user->user_email, $options['users_tags']);			
 	}
 }
 
@@ -85,9 +133,8 @@ function pmprois_pmpro_after_change_membership_level($level_id, $user_id)
 		//get user info
 		$list_user = get_userdata($user_id);		
 		
-		//find the user or add them as a contact
-		
-		//tag the user
+		//add/update the contact and assign the tag
+		pmprois_updateInfusionsoftContact($list_user->user_email, $options['level_' . $level_id . '_tags']);		
 	}
 	elseif(!empty($options['api_key']) && count($options) > 3)
 	{
@@ -97,21 +144,20 @@ function pmprois_pmpro_after_change_membership_level($level_id, $user_id)
 			//get user info
 			$list_user = get_userdata($user_id);
 			
-			//find the user or add them as a contact
-		
-			//tag the user
+			//add/update the contact and assign the tag
+			pmprois_updateInfusionsoftContact($list_user->user_email, $options['users_tags']);	
 		}
 		else
 		{
+			//NOTE: We don't have a way to remove tags from contacts yet
 			//some memberships are on lists. assuming the admin intends this level to be unsubscribed from everything
 			if(is_array($all_tags))
 			{
 				//get user info
 				$list_user = get_userdata($user_id);
 				
-				//find the user or add them as a contact
-		
-				//tag the user
+				//add/update the contact and assign the tag
+				//pmprois_updateInfusionsoftContact($list_user->user_email, $options['users_tags']);
 			}
 		}
 	}
