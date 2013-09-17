@@ -3,7 +3,7 @@
 Plugin Name: PMPro Infusionsoft Integration
 Plugin URI: http://www.paidmembershipspro.com/pmpro-infusionsoft/
 Description: Sync your WordPress users and members with Infusionsoft contacts.
-Version: .2
+Version: .3
 Author: Stranger Studios
 Author URI: http://www.strangerstudios.com
 */
@@ -64,7 +64,7 @@ function pmprois_updateInfusionsoftContact($email, $tags = NULL)
 	require_once(dirname(__FILE__) . "/includes/isdk.php");
 	require_once(ABSPATH . "/krumo/class.krumo.php");
 	
-	$app = new iSDK("izm88326", "infusion", $options['api_key']);
+	$app = new iSDK($options['id'], "infusion", $options['api_key']);
 	
 	$returnFields = array('Id');
     $dups = $app->findByEmail($email, $returnFields);			
@@ -169,6 +169,7 @@ function pmprois_admin_init()
 	//setup settings
 	register_setting('pmprois_options', 'pmprois_options', 'pmprois_options_validate');	
 	add_settings_section('pmprois_section_general', 'General Settings', 'pmprois_section_general', 'pmprois_options');	
+	add_settings_field('pmprois_option_id', 'Infusionsoft Username/ID', 'pmprois_option_id', 'pmprois_options', 'pmprois_section_general');		
 	add_settings_field('pmprois_option_api_key', 'Infusionsoft API Key', 'pmprois_option_api_key', 'pmprois_options', 'pmprois_section_general');		
 	add_settings_field('pmprois_option_users_tags', 'All Users Tags', 'pmprois_option_users_tags', 'pmprois_options', 'pmprois_section_general');	
 	
@@ -250,6 +251,16 @@ function pmprois_section_levels()
 
 
 //options code
+function pmprois_option_id()
+{
+	$options = get_option('pmprois_options');		
+	if(isset($options['id']))
+		$id = $options['id'];
+	else
+		$id = "";
+	echo "<input id='pmprois_id' name='pmprois_options[id]' size='80' type='text' value='" . esc_attr($id) . "' />";
+}
+
 function pmprois_option_api_key()
 {
 	$options = get_option('pmprois_options');		
@@ -291,8 +302,9 @@ function pmprois_option_memberships_tags($level)
 function pmprois_options_validate($input) 
 {					
 	//api key
+	$newinput['id'] = trim(preg_replace("[^a-zA-Z0-9\-]", "", $input['id']));	
 	$newinput['api_key'] = trim(preg_replace("[^a-zA-Z0-9\-]", "", $input['api_key']));		
-	$newinput['users_tags'] = trim(preg_replace("[^a-zA-Z0-9\-]", "", $input['users_tags']));		
+	$newinput['users_tags'] = trim(preg_replace("[^a-zA-Z0-9\-\s]", "", $input['users_tags']));		
 			
 	//membership lists
 	global $pmprois_levels;		
@@ -300,7 +312,7 @@ function pmprois_options_validate($input)
 	{
 		foreach($pmprois_levels as $level)
 		{
-			$newinput['level_' . $level->id . '_tags'] = trim(preg_replace("[^a-zA-Z0-9\-]", "", $input['level_' . $level->id . '_tags']));				
+			$newinput['level_' . $level->id . '_tags'] = trim(preg_replace("[^a-zA-Z0-9\-\s", "", $input['level_' . $level->id . '_tags']));				
 		}
 	}
 	

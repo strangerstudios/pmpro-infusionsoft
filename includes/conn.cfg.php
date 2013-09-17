@@ -1,5 +1,6 @@
 <?php
+	$options = get_option("pmprois_options");	
+	$id = $options['id'];
+	$api_key = $options['api_key'];
 
-$connInfo = array('connectionName:{infusiongsoft id}:{infusionsoft api key}:This is the connection for {infusionsoft url}');
-
-?>
+	$connInfo = array('connectionName:' . $id . ':' . $api_key . ':This is the connection for ' . $id . '.infusionsoft.com');
