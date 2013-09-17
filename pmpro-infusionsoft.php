@@ -62,7 +62,6 @@ function pmprois_updateInfusionsoftContact($email, $tags = NULL)
 	}
 	
 	require_once(dirname(__FILE__) . "/includes/isdk.php");
-	require_once(ABSPATH . "/krumo/class.krumo.php");
 	
 	$app = new iSDK($options['id'], "infusion", $options['api_key']);
 	

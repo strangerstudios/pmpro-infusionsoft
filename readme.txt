@@ -36,6 +36,7 @@ Please visit our premium support site at http://www.paidmembershipspro.com for m
 = .3 =
 * Including the xmlrpc.inc file from Infusionsoft for older PHP versions.
 * The Infusionsoft username/id is now a settings field vs being hard coded into the plugin files.
+* Removed the krumo require.
 
 = .2 =
 * Added readme. This version is actually working and pushing users to Infusionsoft.
