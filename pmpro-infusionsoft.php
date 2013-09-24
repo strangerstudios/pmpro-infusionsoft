@@ -66,10 +66,10 @@ function pmprois_updateInfusionsoftContact($email, $tags = NULL)
 	$app = new iSDK($options['id'], "infusion", $options['api_key']);
 	
 	$returnFields = array('Id');
-    $dups = $app->findByEmail($email, $returnFields);			
-		
+	$dups = $app->findByEmail($email, $returnFields);			
+			
 	//no? add them
-	if(empty($dups))
+	if(!is_array($dups))
 	{		
 		$contact_id = $app->addCon(array("Email"=>$email));
 	}
