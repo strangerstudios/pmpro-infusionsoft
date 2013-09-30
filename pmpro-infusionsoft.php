@@ -66,10 +66,10 @@ function pmprois_updateInfusionsoftContact($email, $tags = NULL)
 	$app = new iSDK($options['id'], "infusion", $options['api_key']);
 	
 	$returnFields = array('Id');
-	$dups = $app->findByEmail($email, $returnFields);			
-			
+    $dups = $app->findByEmail($email, $returnFields);
+		
 	//no? add them
-	if(!is_array($dups))
+	if(empty($dups))
 	{		
 		$contact_id = $app->addCon(array("Email"=>$email));
 	}
@@ -311,7 +311,7 @@ function pmprois_options_validate($input)
 	{
 		foreach($pmprois_levels as $level)
 		{
-			$newinput['level_' . $level->id . '_tags'] = trim(preg_replace("[^a-zA-Z0-9\-\s", "", $input['level_' . $level->id . '_tags']));				
+			$newinput['level_' . $level->id . '_tags'] = trim(preg_replace("[^a-zA-Z0-9\-\s]", "", $input['level_' . $level->id . '_tags']));				
 		}
 	}
 	
