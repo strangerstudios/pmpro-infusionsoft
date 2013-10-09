@@ -115,7 +115,7 @@ function pmprois_user_register($user_id)
 		$list_user = get_userdata($user_id);
 			
 		//add/update the contact and assign the tag
-		pmprois_updateInfusionsoftContact($list_user->user_email, $options['users_tags'], apply_filters("pmpro_infusionsoft_addcon_fields", array()));			
+		pmprois_updateInfusionsoftContact($list_user->user_email, $options['users_tags'], apply_filters("pmpro_infusionsoft_addcon_fields", array(), $list_user));			
 	}
 }
 
@@ -141,7 +141,7 @@ function pmprois_pmpro_after_change_membership_level($level_id, $user_id)
 		$list_user = get_userdata($user_id);		
 				
 		//add/update the contact and assign the tag
-		pmprois_updateInfusionsoftContact($list_user->user_email, $options['level_' . $level_id . '_tags'], apply_filters("pmpro_infusionsoft_addcon_fields", array()));		
+		pmprois_updateInfusionsoftContact($list_user->user_email, $options['level_' . $level_id . '_tags'], apply_filters("pmpro_infusionsoft_addcon_fields", array(), $list_user));		
 	}
 	elseif(!empty($options['api_key']) && count($options) > 3)
 	{
@@ -152,7 +152,7 @@ function pmprois_pmpro_after_change_membership_level($level_id, $user_id)
 			$list_user = get_userdata($user_id);						
 			
 			//add/update the contact and assign the tag
-			pmprois_updateInfusionsoftContact($list_user->user_email, $options['users_tags'], apply_filters("pmpro_infusionsoft_addcon_fields", array()));	
+			pmprois_updateInfusionsoftContact($list_user->user_email, $options['users_tags'], apply_filters("pmpro_infusionsoft_addcon_fields", array(), $list_user));	
 		}
 		else
 		{
@@ -164,7 +164,7 @@ function pmprois_pmpro_after_change_membership_level($level_id, $user_id)
 				$list_user = get_userdata($user_id);
 				
 				//add/update the contact and assign the tag
-				//pmprois_updateInfusionsoftContact($list_user->user_email, $options['users_tags'], apply_filters("pmpro_infusionsoft_addcon_fields", array()));
+				//pmprois_updateInfusionsoftContact($list_user->user_email, $options['users_tags'], apply_filters("pmpro_infusionsoft_addcon_fields", array(), $list_user));
 			}
 		}
 	}
