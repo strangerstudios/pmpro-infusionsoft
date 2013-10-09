@@ -3,7 +3,7 @@
 Plugin Name: PMPro Infusionsoft Integration
 Plugin URI: http://www.paidmembershipspro.com/pmpro-infusionsoft/
 Description: Sync your WordPress users and members with Infusionsoft contacts.
-Version: .3
+Version: .4
 Author: Stranger Studios
 Author URI: http://www.strangerstudios.com
 */
@@ -50,7 +50,7 @@ function pmprois_init()
 add_action("init", "pmprois_init");
 
 //this is the function that integrates with Infusionsoft
-function pmprois_updateInfusionsoftContact($email, $tags = NULL)
+function pmprois_updateInfusionsoftContact($email, $tags = NULL, $otherfields = array())
 {
 	$options = get_option("pmprois_options");			
 	
@@ -69,9 +69,9 @@ function pmprois_updateInfusionsoftContact($email, $tags = NULL)
     $dups = $app->findByEmail($email, $returnFields);
 		
 	//no? add them
-	if(empty($dups))
+	if(!is_array($dups))
 	{		
-		$contact_id = $app->addCon(array("Email"=>$email));
+		$contact_id = $app->addCon(array_merge(array("Email"=>$email), $otherfields));
 	}
 	else
 	{		
@@ -115,25 +115,33 @@ function pmprois_user_register($user_id)
 		$list_user = get_userdata($user_id);
 			
 		//add/update the contact and assign the tag
-		pmprois_updateInfusionsoftContact($list_user->user_email, $options['users_tags']);			
+		pmprois_updateInfusionsoftContact($list_user->user_email, $options['users_tags'], apply_filters("pmpro_infusionsoft_addcon_fields", array()));			
 	}
 }
+
+//for when checking out
+function pmprois_pmpro_after_checkout($user_id)
+{
+	pmprois_pmpro_after_change_membership_level(intval($_REQUEST['level']), $user_id);	
+}
+add_action("pmpro_after_checkout", "pmprois_pmpro_after_checkout", 30);
 
 //subscribe new members (PMPro) when they register
 function pmprois_pmpro_after_change_membership_level($level_id, $user_id)
 {
+	clean_user_cache($user_id);
+	
 	global $pmprois_levels;
-	$options = get_option("pmprois_options");
-	$all_tags = get_option("pmprois_all_tags");	
+	$options = get_option("pmprois_options");	
 		
 	//should we add them to any lists?
 	if(!empty($options['level_' . $level_id . '_tags']) && !empty($options['api_key']))
 	{
 		//get user info
 		$list_user = get_userdata($user_id);		
-		
+				
 		//add/update the contact and assign the tag
-		pmprois_updateInfusionsoftContact($list_user->user_email, $options['level_' . $level_id . '_tags']);		
+		pmprois_updateInfusionsoftContact($list_user->user_email, $options['level_' . $level_id . '_tags'], apply_filters("pmpro_infusionsoft_addcon_fields", array()));		
 	}
 	elseif(!empty($options['api_key']) && count($options) > 3)
 	{
@@ -141,10 +149,10 @@ function pmprois_pmpro_after_change_membership_level($level_id, $user_id)
 		if(!empty($options['users_tags']) && !empty($options['api_key']))
 		{
 			//get user info
-			$list_user = get_userdata($user_id);
+			$list_user = get_userdata($user_id);						
 			
 			//add/update the contact and assign the tag
-			pmprois_updateInfusionsoftContact($list_user->user_email, $options['users_tags']);	
+			pmprois_updateInfusionsoftContact($list_user->user_email, $options['users_tags'], apply_filters("pmpro_infusionsoft_addcon_fields", array()));	
 		}
 		else
 		{
@@ -156,7 +164,7 @@ function pmprois_pmpro_after_change_membership_level($level_id, $user_id)
 				$list_user = get_userdata($user_id);
 				
 				//add/update the contact and assign the tag
-				//pmprois_updateInfusionsoftContact($list_user->user_email, $options['users_tags']);
+				//pmprois_updateInfusionsoftContact($list_user->user_email, $options['users_tags'], apply_filters("pmpro_infusionsoft_addcon_fields", array()));
 			}
 		}
 	}

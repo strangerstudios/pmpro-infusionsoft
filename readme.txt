@@ -3,7 +3,7 @@ Contributors: strangerstudios
 Tags: pmpro, paid memberships pro, infusionsoft, email marketing
 Requires at least: 3.1
 Tested up to: 3.6.1
-Stable tag: .3
+Stable tag: .4
 
 Sync your WordPress users and members with Infusionsoft groups and tags.
 
@@ -33,6 +33,11 @@ Please post it in the issues section of GitHub and we'll fix it as soon as we ca
 Please visit our premium support site at http://www.paidmembershipspro.com for more documentation and our support forums.
 
 == Changelog ==
+= .4 =
+* Added extra call to update contact at checkout to give PMPro time to update user meta.
+* Added pmpro_infusionsoft_addcon_fields filter to update additional fields when updating contacts.
+* Fixed bug in preg_replace for duplicate check.
+
 = .3 =
 * Including the xmlrpc.inc file from Infusionsoft for older PHP versions.
 * The Infusionsoft username/id is now a settings field vs being hard coded into the plugin files.
