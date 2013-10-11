@@ -35,6 +35,7 @@ Please visit our premium support site at http://www.paidmembershipspro.com for m
 == Changelog ==
 = .4.1 =
 * Fixed dup check that was keeping contacts from being added.
+* Now updating user info if someone checks out again. At checkout a contact with no name/etc is added, then when pmpro_after_checkout fires, the contact is updated with the full user data.
 
 = .4 =
 * Added extra call to update contact at checkout to give PMPro time to update user meta.

@@ -76,6 +76,7 @@ function pmprois_updateInfusionsoftContact($email, $tags = NULL, $otherfields = 
 	else
 	{		
 		$contact_id = $dups[0]['Id'];
+		$app->updateCon($contact_id, array_merge(array("Email"=>$email), $otherfields));
 	}
 		
 	if(!empty($contact_id))
@@ -115,7 +116,7 @@ function pmprois_user_register($user_id)
 		$list_user = get_userdata($user_id);
 			
 		//add/update the contact and assign the tag
-		pmprois_updateInfusionsoftContact($list_user->user_email, $options['users_tags'], apply_filters("pmpro_infusionsoft_addcon_fields", array(), $list_user));			
+		pmprois_updateInfusionsoftContact($list_user->user_email, $options['users_tags'], apply_filters("pmpro_infusionsoft_addcon_fields", array("FirstName"=>$list_user->first_name, "LastName"=>$list_user->last_name), $list_user));			
 	}
 }
 
@@ -141,7 +142,7 @@ function pmprois_pmpro_after_change_membership_level($level_id, $user_id)
 		$list_user = get_userdata($user_id);		
 				
 		//add/update the contact and assign the tag
-		pmprois_updateInfusionsoftContact($list_user->user_email, $options['level_' . $level_id . '_tags'], apply_filters("pmpro_infusionsoft_addcon_fields", array(), $list_user));		
+		pmprois_updateInfusionsoftContact($list_user->user_email, $options['level_' . $level_id . '_tags'], apply_filters("pmpro_infusionsoft_addcon_fields", array("FirstName"=>$list_user->first_name, "LastName"=>$list_user->last_name), $list_user));		
 	}
 	elseif(!empty($options['api_key']) && count($options) > 3)
 	{
@@ -152,7 +153,7 @@ function pmprois_pmpro_after_change_membership_level($level_id, $user_id)
 			$list_user = get_userdata($user_id);						
 			
 			//add/update the contact and assign the tag
-			pmprois_updateInfusionsoftContact($list_user->user_email, $options['users_tags'], apply_filters("pmpro_infusionsoft_addcon_fields", array(), $list_user));	
+			pmprois_updateInfusionsoftContact($list_user->user_email, $options['users_tags'], apply_filters("pmpro_infusionsoft_addcon_fields", array("FirstName"=>$list_user->first_name, "LastName"=>$list_user->last_name), $list_user));	
 		}
 		else
 		{
@@ -167,7 +168,7 @@ function pmprois_pmpro_after_change_membership_level($level_id, $user_id)
 				//pmprois_updateInfusionsoftContact($list_user->user_email, $options['users_tags'], apply_filters("pmpro_infusionsoft_addcon_fields", array(), $list_user));
 			}
 		}
-	}
+	}	
 }
 
 //admin init. registers settings
@@ -378,4 +379,3 @@ function pmprois_options_page()
 </div>
 <?php
 }
-
