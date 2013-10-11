@@ -69,7 +69,7 @@ function pmprois_updateInfusionsoftContact($email, $tags = NULL, $otherfields = 
     $dups = $app->findByEmail($email, $returnFields);
 		
 	//no? add them
-	if(!is_array($dups))
+	if(empty($dups) || !is_array($dups))
 	{		
 		$contact_id = $app->addCon(array_merge(array("Email"=>$email), $otherfields));
 	}
@@ -77,7 +77,7 @@ function pmprois_updateInfusionsoftContact($email, $tags = NULL, $otherfields = 
 	{		
 		$contact_id = $dups[0]['Id'];
 	}
-	
+		
 	if(!empty($contact_id))
 	{		
 		//now that we have an id/contact, lets add all tags		
