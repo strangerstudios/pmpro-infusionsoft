@@ -69,15 +69,17 @@ function pmprois_updateInfusionsoftContact($email, $tags = NULL, $otherfields = 
     $dups = $app->findByEmail($email, $returnFields);
 		
 	//no? add them
-	if(empty($dups) || !is_array($dups))
+	if(empty($dups))
 	{		
 		$contact_id = $app->addCon(array_merge(array("Email"=>$email), $otherfields));
 	}
-	else
+	elseif(is_array($dups))
 	{		
 		$contact_id = $dups[0]['Id'];
 		$app->updateCon($contact_id, array_merge(array("Email"=>$email), $otherfields));
 	}
+	else
+		return false;	//probably an error... need some error handling
 		
 	if(!empty($contact_id))
 	{		
