@@ -140,10 +140,7 @@ public function methodCaller($service,$callArray) {
     $call = new xmlrpcmsg($service, $callArray);
     ###Send the call###
     $result = $this->client->send($call);
-    
-	krumo($call);
-	krumo($result);
-	
+    	
 	###Check the returned value to see if it was successful and return it###
     if(!$result->faultCode()) {
       return $result->value();
