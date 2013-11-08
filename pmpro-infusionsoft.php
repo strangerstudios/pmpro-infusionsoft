@@ -173,6 +173,19 @@ function pmprois_pmpro_after_change_membership_level($level_id, $user_id)
 	}	
 }
 
+//update contact in Infusionsoft if a user profile is changed in WordPress
+function pmpromc_profile_update($user_id, $old_user_data)
+{
+ 	//get user info
+	$new_user_data = get_userdata($user_id);
+
+	//get all lists
+	$options = get_option("pmprois_options");
+
+   pmprois_updateInfusionsoftContact($new_user_data->pmpro_bemail, $options['users_tags'], apply_filters("pmpro_infusionsoft_addcon_fields", array("Email"=>$new_user_data->user_email, "FirstName"=>$new_user_data->first_name, "LastName"=>$new_user_data->last_name), $new_user_data));
+}
+add_action("profile_update", "pmpromc_profile_update", 10, 2);
+
 //admin init. registers settings
 function pmprois_admin_init()
 {
@@ -258,7 +271,6 @@ function pmprois_section_levels()
 		}
 	}
 }
-
 
 //options code
 function pmprois_option_id()
