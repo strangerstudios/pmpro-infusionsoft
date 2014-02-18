@@ -248,7 +248,7 @@ function pmprois_section_levels()
 		else
 		{
 		?>
-		<p>For each level below, enter the tags which should be added to the contact when a new user registers.</p>
+		<p>For each level below, enter the tags which should be added to the contact when a new user registers. Enter the <strong>tags IDs</strong> as defined in InfusionSoft, separated by commas. (e.g. 101,102)</p>
 		<?php
 		}
 	}
