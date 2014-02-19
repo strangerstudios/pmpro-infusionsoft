@@ -3,7 +3,7 @@ Contributors: strangerstudios
 Tags: pmpro, paid memberships pro, infusionsoft, email marketing
 Requires at least: 3.1
 Tested up to: 3.6.1
-Stable tag: .5
+Stable tag: .6
 
 Sync your WordPress users and members with Infusionsoft groups and tags.
 
@@ -33,6 +33,10 @@ Please post it in the issues section of GitHub and we'll fix it as soon as we ca
 Please visit our premium support site at http://www.paidmembershipspro.com for more documentation and our support forums.
 
 == Changelog ==
+= .6 =
+* Now getting tags from Infusionsoft and showing them in a multiselect box on the options page.
+* When a user changes levels or cancels, the plugin will now remove tags based on the level they are changing from.
+
 = .5 =
 * Updates contact information in Infusionsoft if it is updated on the WP side. (Thanks, Matt Cherry.)
 

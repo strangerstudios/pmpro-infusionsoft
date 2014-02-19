@@ -29,6 +29,8 @@ Author URI: http://www.strangerstudios.com
 	
 	* Provide export for initial import?
 */
+define('PMPRO_INFUSIONSOFT_DIR', dirname(__FILE__));
+
 //init
 function pmprois_init()
 {		
@@ -52,6 +54,8 @@ add_action("init", "pmprois_init");
 //this is the function that integrates with Infusionsoft
 function pmprois_updateInfusionsoftContact($email, $tags = NULL, $otherfields = array())
 {
+	global $wpdb;
+	
 	$options = get_option("pmprois_options");			
 	
 	//pre tags
@@ -82,7 +86,7 @@ function pmprois_updateInfusionsoftContact($email, $tags = NULL, $otherfields = 
 		return false;	//probably an error... need some error handling
 		
 	if(!empty($contact_id))
-	{		
+	{
 		//now that we have an id/contact, lets add all tags		
 		if(is_array($tags))
 		{
@@ -94,11 +98,48 @@ function pmprois_updateInfusionsoftContact($email, $tags = NULL, $otherfields = 
 				}
 				else
 				{
-					//$group_id = GET GROUP ID
+					//$group_id = GET GROUP ID	//this feature is not supported by the API
 					//$app->grpAssign($contact_id, $group_id);
 				}
 			}
-		}		
+		}
+
+		//if this user had an old level, let's remove those tags he doesn't still have
+		if(function_exists("pmpro_getMembershipLevelForUser"))
+		{
+			$user = get_user_by("email", $email);
+			$user->membership_level = pmpro_getMembershipLevelForUser($user->ID);
+			$old_level = $wpdb->get_row("SELECT * FROM $wpdb->pmpro_memberships_users WHERE user_id = '" . $user->ID . "' AND membership_id <> '" . $user->membership_level->id . "' AND status = 'inactive' ORDER BY id DESC LIMIT 1");
+						
+			if(!empty($old_level))
+			{
+				$old_tags = $options['level_' . $old_level->membership_id . '_tags'];
+				if(!is_array($old_tags))
+				{
+					$old_tags = str_replace(" ", "", $old_tags);
+					$old_tags = explode(",", $old_tags);
+				}
+								
+				if(!empty($old_tags))
+				{
+					if(is_array($tags))
+						$old_tags = array_diff($old_tags, $tags);
+										
+					foreach($old_tags as $tag)
+					{
+						if(is_numeric($tag))
+						{					
+							$app->grpRemove($contact_id, $tag);
+						}
+						else
+						{
+							//$group_id = GET GROUP ID	//this feature is not supported by the API
+							//$app->grpRemove($contact_id, $group_id);
+						}
+					}
+				}				
+			}
+		}
 		
 		return $contact_id;
 	}
@@ -111,7 +152,7 @@ function pmprois_user_register($user_id)
 {	
 	$options = get_option("pmprois_options");
 	
-	//should we add them to any lists?
+	//should we add them to any tags?
 	if(!empty($options['users_tags']) && !empty($options['api_key']))
 	{
 		//get user info
@@ -137,7 +178,7 @@ function pmprois_pmpro_after_change_membership_level($level_id, $user_id)
 	global $pmprois_levels;
 	$options = get_option("pmprois_options");	
 		
-	//should we add them to any lists?
+	//should we add them to any tags?
 	if(!empty($options['level_' . $level_id . '_tags']) && !empty($options['api_key']))
 	{
 		//get user info
@@ -148,7 +189,7 @@ function pmprois_pmpro_after_change_membership_level($level_id, $user_id)
 	}
 	elseif(!empty($options['api_key']) && count($options) > 3)
 	{
-		//now they are a normal user should we add them to any lists?
+		//now they are a normal user should we add them to any tags?
 		if(!empty($options['users_tags']) && !empty($options['api_key']))
 		{
 			//get user info
@@ -160,7 +201,7 @@ function pmprois_pmpro_after_change_membership_level($level_id, $user_id)
 		else
 		{
 			//NOTE: We don't have a way to remove tags from contacts yet
-			//some memberships are on lists. assuming the admin intends this level to be unsubscribed from everything
+			//some memberships have tags. assuming the admin intends this level to be unsubscribed from everything
 			if(is_array($all_tags))
 			{
 				//get user info
@@ -174,17 +215,17 @@ function pmprois_pmpro_after_change_membership_level($level_id, $user_id)
 }
 
 //update contact in Infusionsoft if a user profile is changed in WordPress
-function pmpromc_profile_update($user_id, $old_user_data)
+function pmprois_profile_update($user_id, $old_user_data)
 {
  	//get user info
 	$new_user_data = get_userdata($user_id);
 
-	//get all lists
+	//get options
 	$options = get_option("pmprois_options");
 
    pmprois_updateInfusionsoftContact($new_user_data->pmpro_bemail, $options['users_tags'], apply_filters("pmpro_infusionsoft_addcon_fields", array("Email"=>$new_user_data->user_email, "FirstName"=>$new_user_data->first_name, "LastName"=>$new_user_data->last_name), $new_user_data));
 }
-add_action("profile_update", "pmpromc_profile_update", 10, 2);
+add_action("profile_update", "pmprois_profile_update", 10, 2);
 
 //admin init. registers settings
 function pmprois_admin_init()
@@ -248,7 +289,7 @@ function pmprois_section_levels()
 		else
 		{
 		?>
-		<p>For each level below, enter the tags which should be added to the contact when a new user registers. Enter the <strong>tags IDs</strong> as defined in InfusionSoft, separated by commas. (e.g. 101,102)</p>
+		<p>For each level below, choose the tags which should be added to the contact when a new user registers or switches levels.</p>
 		<?php
 		}
 	}
@@ -295,29 +336,74 @@ function pmprois_option_api_key()
 
 function pmprois_option_users_tags()
 {		
+	global $pmprois_all_tags;
 	$options = get_option('pmprois_options');
-			
-	if(isset($options['users_tags']))
-		$users_tags = $options['users_tags'];
-	else
-		$users_tags = "";
 		
-	echo "<input id='pmprois_users_tags' name='pmprois_options[users_tags]' size='80' type='text' value='" . esc_attr($users_tags) . "' />";			
+	if(isset($options['users_tags']) && is_array($options['users_tags']))
+	{
+		$selected_tags = $options['users_tags'];
+	}
+	elseif(isset($options['users_tags']))
+	{
+		//probably saved as comma separated string
+		$selected_tags = str_replace(" ", "", $options['users_tags']);
+		$selected_tags = explode(",", $selected_tags);
+	}
+	else
+		$selected_tags = array();
+		
+	if(!empty($pmprois_all_tags))
+	{
+		echo "<select multiple='yes' name=\"pmprois_options[users_tags][]\">";
+		foreach($pmprois_all_tags as $tag_id => $tag)
+		{
+			echo "<option value='" . $tag_id . "' ";
+			if(in_array($tag_id, $selected_tags))
+				echo "selected='selected'";
+			echo ">" . $tag . "</option>";
+		}
+		echo "</select>";
+	}
+	else
+	{
+		echo "No tags found.";
+	}
 }
 
 function pmprois_option_memberships_tags($level)
 {	
-	global $pmprois_tags;
+	global $pmprois_all_tags;
 	$options = get_option('pmprois_options');
 	
 	$level = $level[0];	//WP stores this in the first element of an array
 		
-	if(isset($options['level_' . $level->id . '_tags']))
-		$level_tags = $options['level_' . $level->id . '_tags'];
+	if(isset($options['level_' . $level->id . '_tags']) && is_array($options['level_' . $level->id . '_tags']))
+		$selected_tags = $options['level_' . $level->id . '_tags'];
+	elseif(isset($options['level_' . $level->id . '_tags']))
+	{
+		//probably saved as comma separated string
+		$selected_tags = str_replace(" ", "", $options['level_' . $level->id . '_tags']);
+		$selected_tags = explode(",", $selected_tags);		
+	}
 	else
-		$level_tags = "";
+		$selected_tags = array();
 	
-	echo "<input id='pmprois_level_" . $level->id . "_tags' name='pmprois_options[level_" . $level->id . "_tags]' size='80' type='text' value='" . esc_attr($level_tags) . "' />";		
+	if(!empty($pmprois_all_tags))
+	{
+		echo "<select multiple='yes' name=\"pmprois_options[level_" . $level->id . "_tags][]\">";
+		foreach($pmprois_all_tags as $tag_id => $tag)
+		{
+			echo "<option value='" . $tag_id . "' ";
+			if(in_array($tag_id, $selected_tags))
+				echo "selected='selected'";
+			echo ">" . $tag . "</option>";
+		}
+		echo "</select>";
+	}
+	else
+	{
+		echo "No tags found.";
+	}		
 }
 
 // validate our options
@@ -326,17 +412,29 @@ function pmprois_options_validate($input)
 	//api key
 	$newinput['id'] = trim(preg_replace("[^a-zA-Z0-9\-]", "", $input['id']));	
 	$newinput['api_key'] = trim(preg_replace("[^a-zA-Z0-9\-]", "", $input['api_key']));		
-	$newinput['users_tags'] = trim(preg_replace("[^a-zA-Z0-9\-\s]", "", $input['users_tags']));		
-			
-	//membership lists
+		
+	//user tags
+	if(!empty($input['users_tags']) && is_array($input['users_tags']))
+	{
+		$count = count($input['users_tags']);
+		for($i = 0; $i < $count; $i++)
+			$newinput['users_tags'][] = trim(preg_replace("[^a-zA-Z0-9\-]", "", $input['users_tags'][$i]));	;
+	}
+		
+	//membership tags
 	global $pmprois_levels;		
 	if(!empty($pmprois_levels))
 	{
 		foreach($pmprois_levels as $level)
 		{
-			$newinput['level_' . $level->id . '_tags'] = trim(preg_replace("[^a-zA-Z0-9\-\s]", "", $input['level_' . $level->id . '_tags']));				
+			if(!empty($input['level_' . $level->id . '_tags']) && is_array($input['level_' . $level->id . '_tags']))
+			{
+				$count = count($input['level_' . $level->id . '_tags']);
+				for($i = 0; $i < $count; $i++)
+					$newinput['level_' . $level->id . '_tags'][] = trim(preg_replace("[^a-zA-Z0-9\-]", "", $input['level_' . $level->id . '_tags'][$i]));	;
+			}
 		}
-	}
+	}		
 	
 	return $newinput;
 }		
@@ -348,21 +446,49 @@ function pmprois_admin_add_page()
 }
 add_action('admin_menu', 'pmprois_admin_add_page');
 
+//get tags via API
+function pmprois_getTags($force = false)
+{
+	global $pmprois_all_tags;
+	$options = get_option("pmprois_options");
+	
+	if(isset($pmprois_all_tags) && !$force)
+		return $pmprois_all_tags;
+	
+	//load api and get tags
+	require_once(dirname(__FILE__) . "/includes/isdk.php");
+	$app = new iSDK($options['id'], "infusion", $options['api_key']);
+	$data = $app->dsQuery('ContactGroup', 1000, 0, array('Id' => '%'), array('Id', 'GroupName'));
+	
+	if(!is_array($data))
+	{
+		//API might have failed, use what we have in settings
+		$pmprois_all_tags = get_option('pmprois_all_tags', array());
+	}
+	
+	//rearrange array so ids are keys
+	$pmprois_all_tags = array();
+	foreach($data as $tag)
+		$pmprois_all_tags[$tag['Id']] = $tag['GroupName'];
+	
+	//Save all of our new data
+	update_option( "pmprois_all_tags", $pmprois_all_tags);
+	
+	return $pmprois_all_tags;
+}
+
 //html for options page
 function pmprois_options_page()
 {
 	global $pmprois_tags;
 	
-	//check for a valid API key and get lists
+	//check for a valid API key and get tags
 	$options = get_option("pmprois_options");	
 	$api_key = $options['api_key'];
 	if(!empty($api_key))
 	{
-		/** Ping the Infusionsoft API to make sure this API Key is valid */
-		//$api = new MCAPI( $api_key );
-		//$api->ping();		
-		
-		
+		//get tags
+		pmprois_getTags();
 	}
 ?>
 <div class="wrap">
