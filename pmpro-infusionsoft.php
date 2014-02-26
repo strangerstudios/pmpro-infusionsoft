@@ -3,7 +3,7 @@
 Plugin Name: PMPro Infusionsoft Integration
 Plugin URI: http://www.paidmembershipspro.com/pmpro-infusionsoft/
 Description: Sync your WordPress users and members with Infusionsoft contacts.
-Version: .6
+Version: 1.0
 Author: Stranger Studios
 Author URI: http://www.strangerstudios.com
 */
