@@ -3,7 +3,7 @@
 Plugin Name: PMPro Infusionsoft Integration
 Plugin URI: http://www.paidmembershipspro.com/pmpro-infusionsoft/
 Description: Sync your WordPress users and members with Infusionsoft contacts.
-Version: 1.0
+Version: 1.1
 Author: Stranger Studios
 Author URI: http://www.strangerstudios.com
 */
@@ -223,7 +223,7 @@ function pmprois_profile_update($user_id, $old_user_data)
 	//get options
 	$options = get_option("pmprois_options");
 
-   pmprois_updateInfusionsoftContact($new_user_data->pmpro_bemail, $options['users_tags'], apply_filters("pmpro_infusionsoft_addcon_fields", array("Email"=>$new_user_data->user_email, "FirstName"=>$new_user_data->first_name, "LastName"=>$new_user_data->last_name), $new_user_data));
+   pmprois_updateInfusionsoftContact($old_user_data->user_email, $options['users_tags'], apply_filters("pmpro_infusionsoft_addcon_fields", array("Email"=>$new_user_data->user_email, "FirstName"=>$new_user_data->first_name, "LastName"=>$new_user_data->last_name), $new_user_data));
 }
 add_action("profile_update", "pmprois_profile_update", 10, 2);
 
