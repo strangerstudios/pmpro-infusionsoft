@@ -3,7 +3,7 @@
 Plugin Name: PMPro Infusionsoft Integration
 Plugin URI: http://www.paidmembershipspro.com/pmpro-infusionsoft/
 Description: Sync your WordPress users and members with Infusionsoft contacts.
-Version: 1.2
+Version: 1.2.1
 Author: Stranger Studios
 Author URI: http://www.strangerstudios.com
 */
@@ -59,11 +59,11 @@ function pmprois_testConnection() {
     global $pmprois_error_msg;
 
     $options = get_option("pmprois_options");
-
+	
     require_once(dirname(__FILE__) . "/includes/isdk.php");
-    $app = new iSDK($options['id'], 'infusionsoft', $options['apikey']);
+    $app = new iSDK($options['id'], 'infusionsoft', $options['api_key']);
 
-    if($app->client)
+    if(!empty($app->client))
         return true;
     else {
         //if it didn't work try curl
@@ -73,7 +73,7 @@ function pmprois_testConnection() {
     }
     if(!$success) {
         //try again
-        $app = new iSDK($options['id'], 'infusionsoft', $options['apikey']);
+        $app = new iSDK($options['id'], 'infusionsoft', $options['api_key']);
         if($app->client)
             return true;
         else {
@@ -301,10 +301,12 @@ function pmprois_section_general()
     global $pmprois_error_msg;
 
     if($pmprois_error_msg) { ?>
-        <p class="error">
-            <strong>There was an error connecting to your InfusionSoft account:</strong><br>
-            <?php echo $pmprois_error_msg; ?>
-        </p>
+         <div class="message error">
+            <p>
+				<strong>There was an error connecting to your InfusionSoft account:</strong><br>
+				<?php echo $pmprois_error_msg; ?>
+			</p>
+        </div>
     <?php }
 }
 
@@ -507,10 +509,15 @@ function pmprois_getTags($force = false)
     }
 
     //rearrange array so ids are keys
-    $pmprois_all_tags = array();
-    foreach($data as $tag)
-        $pmprois_all_tags[$tag['Id']] = $tag['GroupName'];
-
+    $pmprois_all_tags = array();    
+	if(is_array($data))
+	{
+		foreach($data as $tag)
+			$pmprois_all_tags[$tag['Id']] = $tag['GroupName'];
+	}
+	else
+		return $data;
+			
     //Save all of our new data
     update_option( "pmprois_all_tags", $pmprois_all_tags);
 
@@ -520,7 +527,7 @@ function pmprois_getTags($force = false)
 //html for options page
 function pmprois_options_page()
 {
-    global $pmprois_tags;
+    global $pmprois_tags, $pmprois_error_msg;
 
     //check for a valid API key and get tags
     $options = get_option("pmprois_options");
@@ -528,7 +535,9 @@ function pmprois_options_page()
     if(!empty($api_key))
     {
         //get tags
-        pmprois_getTags();
+        $tags = pmprois_getTags();
+		if(!is_array($tags))
+			$pmprois_error_msg = $tags;
     }
     ?>
     <div class="wrap">
