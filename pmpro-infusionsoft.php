@@ -3,7 +3,7 @@
 Plugin Name: PMPro Infusionsoft Integration
 Plugin URI: http://www.paidmembershipspro.com/pmpro-infusionsoft/
 Description: Sync your WordPress users and members with Infusionsoft contacts.
-Version: 1.2.1
+Version: 1.3
 Author: Stranger Studios
 Author URI: http://www.strangerstudios.com
 */
@@ -50,7 +50,7 @@ function pmprois_init()
         add_action("pmpro_after_change_membership_level", "pmprois_pmpro_after_change_membership_level", 10, 2);
     }
 
-    pmprois_testConnection();
+    //pmprois_testConnection();
 }
 add_action("init", "pmprois_init");
 
@@ -58,31 +58,23 @@ function pmprois_testConnection() {
 
     global $pmprois_error_msg;
 
-    $options = get_option("pmprois_options");
+    $options = get_option("pmprois_options", array());
+	
+	if(empty($options) || empty($options['id']) || empty($options['api_key']))
+		return false;
 	
     require_once(dirname(__FILE__) . "/includes/isdk.php");
-    $app = new iSDK($options['id'], 'infusionsoft', $options['api_key']);
-
-    if(!empty($app->client))
-        return true;
-    else {
-        //if it didn't work try curl
-        $ch = curl_init('https://paidmembershipspro.com');
-        $success = curl_exec($ch);
-        curl_close($ch);
-    }
-    if(!$success) {
-        //try again
-        $app = new iSDK($options['id'], 'infusionsoft', $options['api_key']);
-        if($app->client)
-            return true;
-        else {
-            //set curl error
-            $pmprois_error_msg = $app->dsQuery('ContactGroup', 1, 0, array('Id' => '%'), array('Id', 'GroupName'));
-            return false;
-        }
-    }
-    return false;
+    $app = new iSDK($options['id'], 'infusion', $options['api_key']);
+	
+	if($app->cfgCon($options['id'], $options['api_key'])) 
+	{
+		return true;
+	} 
+	else 
+	{
+		$pmprois_error_msg = "Connectino to Infusionsoft failed. Check your ID and API Key.";
+		return false;
+	}    
 }
 
 //this is the function that integrates with Infusionsoft
