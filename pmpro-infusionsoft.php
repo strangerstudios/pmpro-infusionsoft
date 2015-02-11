@@ -3,7 +3,7 @@
 Plugin Name: PMPro Infusionsoft Integration
 Plugin URI: http://www.paidmembershipspro.com/pmpro-infusionsoft/
 Description: Sync your WordPress users and members with Infusionsoft contacts.
-Version: 1.3
+Version: 1.3.1
 Author: Stranger Studios
 Author URI: http://www.strangerstudios.com
 */
@@ -106,7 +106,11 @@ function pmprois_updateInfusionsoftContact($email, $tags = NULL, $otherfields = 
     elseif(is_array($dups))
     {
         $contact_id = $dups[0]['Id'];
-        $app->updateCon($contact_id, array_merge(array("Email"=>$email), $otherfields));
+        if(!isset($otherfields['Email']))
+			$fields = array_merge(array("Email"=>$email), $otherfields);
+		else
+			$fields = $otherfields;
+		$app->updateCon($contact_id, $fields);
     }
     else
         return false;	//probably an error... need some error handling
@@ -249,7 +253,47 @@ function pmprois_profile_update($user_id, $old_user_data)
     //get options
     $options = get_option("pmprois_options");
 
-    pmprois_updateInfusionsoftContact($old_user_data->user_email, $options['users_tags'], apply_filters("pmpro_infusionsoft_addcon_fields", array("Email"=>$new_user_data->user_email, "FirstName"=>$new_user_data->first_name, "LastName"=>$new_user_data->last_name), $new_user_data));
+	if(function_exists("pmpro_getMembershipLevelForUser"))
+	{
+		$user_level = pmpro_getMembershipLevelForUser($user_id);
+		if(!empty($user_level))
+			$level_id = $user_level->id;
+	}
+		
+    //should we add them to any tags?
+    if(!empty($level_id) && !empty($options['level_' . $level_id . '_tags']) && !empty($options['api_key']))
+    {
+        //get user info
+        $list_user = get_userdata($user_id);
+
+        //add/update the contact and assign the tag
+        pmprois_updateInfusionsoftContact($old_user_data->user_email, $options['level_' . $level_id . '_tags'], apply_filters("pmpro_infusionsoft_addcon_fields", array("Email"=>$list_user->user_email, "FirstName"=>$list_user->first_name, "LastName"=>$list_user->last_name), $list_user));
+    }
+    elseif(!empty($options['api_key']) && count($options) > 3)
+    {
+        //now they are a normal user should we add them to any tags?
+        if(!empty($options['users_tags']) && !empty($options['api_key']))
+        {
+            //get user info
+            $list_user = get_userdata($user_id);
+
+			//add/update the contact and assign the tag
+			pmprois_updateInfusionsoftContact($old_user_data->user_email, $options['users_tags'], apply_filters("pmpro_infusionsoft_addcon_fields", array("Email"=>$list_user->user_email, "FirstName"=>$list_user->first_name, "LastName"=>$list_user->last_name), $list_user));			                       
+        }
+        else
+        {
+            //NOTE: We don't have a way to remove tags from contacts yet
+            //some memberships have tags. assuming the admin intends this level to be unsubscribed from everything
+            if(is_array($all_tags))
+            {
+                //get user info
+                $list_user = get_userdata($user_id);
+
+                //add/update the contact and assign the tag
+                //pmprois_updateInfusionsoftContact($list_user->user_email, $options['users_tags'], apply_filters("pmpro_infusionsoft_addcon_fields", array(), $list_user));
+            }
+        }
+    }		
 }
 add_action("profile_update", "pmprois_profile_update", 10, 2);
 
