@@ -1,9 +1,9 @@
 <?php
 /*
-Plugin Name: PMPro Infusionsoft Integration
+Plugin Name: Paid Memberships Pro - Infusionsoft Add On
 Plugin URI: http://www.paidmembershipspro.com/pmpro-infusionsoft/
 Description: Sync your WordPress users and members with Infusionsoft contacts.
-Version: 1.3.1
+Version: 1.3.2
 Author: Stranger Studios
 Author URI: http://www.strangerstudios.com
 */
@@ -54,6 +54,12 @@ function pmprois_init()
 }
 add_action("init", "pmprois_init");
 
+function pmprois_loadISDK()
+{
+	if(!class_exists('iSDK'))
+		require_once(PMPRO_INFUSIONSOFT_DIR . "/includes/isdk.php");
+}
+
 function pmprois_testConnection() {
 
     global $pmprois_error_msg;
@@ -63,7 +69,7 @@ function pmprois_testConnection() {
 	if(empty($options) || empty($options['id']) || empty($options['api_key']))
 		return false;
 	
-    require_once(dirname(__FILE__) . "/includes/isdk.php");
+    pmprois_loadISDK();
     $app = new iSDK($options['id'], 'infusion', $options['api_key']);
 	
 	if($app->cfgCon($options['id'], $options['api_key'])) 
@@ -91,8 +97,7 @@ function pmprois_updateInfusionsoftContact($email, $tags = NULL, $otherfields = 
         $tags = explode(",", $tags);
     }
 
-    require_once(dirname(__FILE__) . "/includes/isdk.php");
-
+    pmprois_loadISDK();
     $app = new iSDK($options['id'], "infusion", $options['api_key']);
 
     $returnFields = array('Id');
@@ -534,7 +539,7 @@ function pmprois_getTags($force = false)
         return $pmprois_all_tags;
 
     //load api and get tags
-    require_once(dirname(__FILE__) . "/includes/isdk.php");
+    pmprois_loadISDK();
     $app = new iSDK($options['id'], "infusion", $options['api_key']);
     $data = $app->dsQuery('ContactGroup', 1000, 0, array('Id' => '%'), array('Id', 'GroupName'));
 
@@ -604,3 +609,31 @@ function pmprois_options_page()
     </div>
 <?php
 }
+
+/*
+Function to add links to the plugin action links
+*/
+function pmprois_add_action_links($links) {
+	
+	$new_links = array(
+			'<a href="' . get_admin_url(NULL, 'options-general.php?page=pmprois_options') . '">Settings</a>',
+	);
+	return array_merge($new_links, $links);
+}
+add_filter('plugin_action_links_' . plugin_basename(__FILE__), 'pmprois_add_action_links');
+
+/*
+Function to add links to the plugin row meta
+*/
+function pmprois_plugin_row_meta($links, $file) {
+	if(strpos($file, 'pmpro-infusionsoft.php') !== false)
+	{
+		$new_links = array(
+			'<a href="' . esc_url('http://www.paidmembershipspro.com/add-ons/third-party-integration/pmpro-infusionsoft-integration/') . '" title="' . esc_attr( __( 'View Documentation', 'pmpro' ) ) . '">' . __( 'Docs', 'pmpro' ) . '</a>',
+			'<a href="' . esc_url('http://paidmembershipspro.com/support/') . '" title="' . esc_attr( __( 'Visit Customer Support Forum', 'pmpro' ) ) . '">' . __( 'Support', 'pmpro' ) . '</a>',
+		);
+		$links = array_merge($links, $new_links);
+	}
+	return $links;
+}
+add_filter('plugin_row_meta', 'pmprois_plugin_row_meta', 10, 2);
