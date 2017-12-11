@@ -1,8 +1,8 @@
 === Paid Memberships Pro - Infusionsoft Add On ===
 Contributors: strangerstudios
 Tags: pmpro, paid memberships pro, infusionsoft, email marketing
-Requires at least: 3.5
-Tested up to: 4.4
+Requires at least: 4
+Tested up to: 4.9.1
 Stable tag: 1.3.2
 
 Sync your WordPress users and members with Infusionsoft groups and tags.
