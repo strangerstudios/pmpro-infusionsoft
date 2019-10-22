@@ -1,11 +1,11 @@
 <?php
 /*
 Plugin Name: Paid Memberships Pro - Infusionsoft Add On
-Plugin URI: http://www.paidmembershipspro.com/pmpro-infusionsoft/
+Plugin URI: https://www.paidmembershipspro.com/add-ons/pmpro-infusionsoft-integration/
 Description: Sync your WordPress users and members with Infusionsoft contacts.
 Version: 1.3.2
-Author: Stranger Studios
-Author URI: http://www.strangerstudios.com
+Author: Paid Memberships Pro
+Author URI: https://www.paidmembershipspro.com
 */
 /*
 	Copyright 2011	Stranger Studios	(email : jason@strangerstudios.com)
@@ -629,8 +629,8 @@ function pmprois_plugin_row_meta($links, $file) {
 	if(strpos($file, 'pmpro-infusionsoft.php') !== false)
 	{
 		$new_links = array(
-			'<a href="' . esc_url('http://www.paidmembershipspro.com/add-ons/third-party-integration/pmpro-infusionsoft-integration/') . '" title="' . esc_attr( __( 'View Documentation', 'pmpro' ) ) . '">' . __( 'Docs', 'pmpro' ) . '</a>',
-			'<a href="' . esc_url('http://paidmembershipspro.com/support/') . '" title="' . esc_attr( __( 'Visit Customer Support Forum', 'pmpro' ) ) . '">' . __( 'Support', 'pmpro' ) . '</a>',
+			'<a href="' . esc_url('https://www.paidmembershipspro.com/add-ons/pmpro-infusionsoft-integration/') . '" title="' . esc_attr( __( 'View Documentation', 'pmpro' ) ) . '">' . __( 'Docs', 'pmpro' ) . '</a>',
+			'<a href="' . esc_url('https://www.paidmembershipspro.com/support/') . '" title="' . esc_attr( __( 'Visit Customer Support Forum', 'pmpro' ) ) . '">' . __( 'Support', 'pmpro' ) . '</a>',
 		);
 		$links = array_merge($links, $new_links);
 	}
