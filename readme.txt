@@ -15,6 +15,9 @@ Sync your WordPress users and members with Infusionsoft groups and tags.
 
 If Paid Memberships Pro is installed you can sync users by membership level, otherwise all users can be synced to one or more groups.
 
+= Official Paid Memberships Pro Add On =
+
+This is an official Add On for [Paid Memberships Pro](https://www.paidmembershipspro.com), the most complete member management and membership subscriptions plugin for WordPress.
 
 == Installation ==
 
