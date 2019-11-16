@@ -3,31 +3,13 @@
 Plugin Name: Paid Memberships Pro - Infusionsoft Add On
 Plugin URI: https://www.paidmembershipspro.com/add-ons/pmpro-infusionsoft-integration/
 Description: Sync your WordPress users and members with Infusionsoft contacts.
-Version: 1.3.2
-Author: Paid Memberships Pro
-Author URI: https://www.paidmembershipspro.com
+Version: 1.4
+Author: Stranger Studios
+Author URI: http://www.strangerstudios.com
 */
 /*
 	Copyright 2011	Stranger Studios	(email : jason@strangerstudios.com)
 	GPLv2 Full license details in license.txt
-*/
-
-/*
-	* XMLRPC lib?
-	* options
-	- Infusionsoft API Key
-	
-	If PMPro is not installed:
-	- New users should be added with these tags: [ ]
-	- Remove members from list when they unsubscribe/delete their account? [ ]
-	
-	If PMPro is installed:
-	* All new users should be added with these tags:
-	* New users with no membership should be added with these tags:
-	* New users with membership # should be added with these tags: 
-	* (Show each level)		
-	
-	* Provide export for initial import?
 */
 define('PMPRO_INFUSIONSOFT_DIR', dirname(__FILE__));
 global $pmprois_error_msg;
@@ -53,6 +35,19 @@ function pmprois_init()
     //pmprois_testConnection();
 }
 add_action("init", "pmprois_init");
+
+/*
+	Enqueue Select2 JS
+*/
+function pmprois_enqueue_select2($hook)
+{
+	// only include on the PMPro Infusionsoft settings page
+	if( !empty( $_REQUEST['page'] ) && $_REQUEST['page'] == 'pmprois_options' ) {
+		wp_enqueue_style('select2', plugins_url('css/select2.min.css', __FILE__), '', '4.0.3', 'screen');
+		wp_enqueue_script('select2', plugins_url('js/select2.min.js', __FILE__), array( 'jquery' ), '4.0.3' );
+	}
+}
+add_action("admin_enqueue_scripts", "pmprois_enqueue_select2");
 
 function pmprois_loadISDK()
 {
@@ -437,7 +432,7 @@ function pmprois_option_users_tags()
 
     if(!empty($pmprois_all_tags))
     {
-        echo "<select multiple='yes' name=\"pmprois_options[users_tags][]\">";
+        echo "<select class='select2' multiple='yes' name=\"pmprois_options[users_tags][]\">";
         foreach($pmprois_all_tags as $tag_id => $tag)
         {
             echo "<option value='" . $tag_id . "' ";
@@ -473,7 +468,7 @@ function pmprois_option_memberships_tags($level)
 
     if(!empty($pmprois_all_tags))
     {
-        echo "<select multiple='yes' name=\"pmprois_options[level_" . $level->id . "_tags][]\">";
+        echo "<select class='select2' multiple='yes' name=\"pmprois_options[level_" . $level->id . "_tags][]\">";
         foreach($pmprois_all_tags as $tag_id => $tag)
         {
             echo "<option value='" . $tag_id . "' ";
@@ -541,7 +536,19 @@ function pmprois_getTags($force = false)
     //load api and get tags
     pmprois_loadISDK();
     $app = new iSDK($options['id'], "infusion", $options['api_key']);
-    $data = $app->dsQuery('ContactGroup', 1000, 0, array('Id' => '%'), array('Id', 'GroupName'));
+    
+    $data = array();
+    $page = 0;
+    $maxpages = 10;
+    while( $page >= 0 ) {
+        $newdata = $app->dsQuery('ContactGroup', 1000, $page, array('Id' => '%'), array('Id', 'GroupName'));
+        if( is_array( $newdata ) && $page < $maxpages ) {
+            $data = array_merge($data, $newdata);
+            $page++;
+        } else {
+            $page = -1;
+        }
+    }
 
     if(!is_array($data))
     {
@@ -607,6 +614,11 @@ function pmprois_options_page()
 
         </form>
     </div>
+    <script>
+        jQuery(document).ready(function() {
+            jQuery('select.select2').select2();
+        });
+    </script>
 <?php
 }
 

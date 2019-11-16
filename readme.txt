@@ -2,8 +2,8 @@
 Contributors: strangerstudios
 Tags: pmpro, paid memberships pro, infusionsoft, email marketing
 Requires at least: 4
-Tested up to: 5.2.2
-Stable tag: 1.3.2
+Tested up to: 5.3
+Stable tag: 1.4
 
 Sync your WordPress users and members with Infusionsoft groups and tags.
 
@@ -40,7 +40,8 @@ Please visit our premium support site at http://www.paidmembershipspro.com for m
 1. Settings screen to add Infusionsoft Username/ID and API Key; Assign All Users Tags and per-Membership Level Tags.
 
 == Changelog ==
-= 1.3.2
+= 1.4
+* BUG FIX/ENHANCEMENT: If you have more than 1000 tags/groups, we will import them all into the settings page. We are using the select2 library to make it easier to search and add tags on those pages.
 * BUG: Checking if iSDK is already loaded before loading again to prevent conflicts with other plugins loading the SDK. Issues may still persist if the plugins load different versions of the SDK.
 
 = 1.3.1 =
