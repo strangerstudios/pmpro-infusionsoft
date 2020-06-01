@@ -4,8 +4,8 @@ Plugin Name: Paid Memberships Pro - Infusionsoft Add On
 Plugin URI: https://www.paidmembershipspro.com/add-ons/pmpro-infusionsoft-integration/
 Description: Sync your WordPress users and members with Infusionsoft contacts.
 Version: 1.4
-Author: Stranger Studios
-Author URI: http://www.strangerstudios.com
+Author: Paid Memberships Pro
+Author URI: https://www.paidmembershipspro.com/
 */
 /*
 	Copyright 2011	Stranger Studios	(email : jason@strangerstudios.com)
@@ -590,7 +590,7 @@ function pmprois_options_page()
     ?>
     <div class="wrap">
         <div id="icon-options-general" class="icon32"><br></div>
-        <h2>PMPro Infusionsoft Integration Options</h2>
+        <h2>Infusionsoft Integration Options and Settings</h2>
 
         <?php if(!empty($msg)) { ?>
             <div class="message <?php echo $msgt; ?>"><p><?php echo $msg; ?></p></div>
@@ -598,10 +598,9 @@ function pmprois_options_page()
 
         <form action="options.php" method="post">
 
-            <p>This plugin will integrate your site with Infusionsoft. You can enter one or more Infusionsoft tags to have added to your contacts when they signup for your site.</p>
-            <p>If you have <a href="http://www.paidmembershipspro.com">Paid Memberships Pro</a> installed, you can also enter one or more Infusionsoft tags to have added to contacts for each membership level.</p>
+            <p>This plugin will integrate your site with Infusionsoft. You can enter one or more Infusionsoft tags to have added to your contacts when they signup for your site. If you have <a href="https://www.paidmembershipspro.com">Paid Memberships Pro</a> installed, you can also enter one or more Infusionsoft tags to have added to contacts for each membership level.</p>
             <p>Don't have an Infusionsoft account? <a href="http://www.infusionsoft.com/" target="_blank">Get one here</a>.</p>
-
+            <hr />
             <?php settings_fields('pmprois_options'); ?>
             <?php do_settings_sections('pmprois_options'); ?>
 

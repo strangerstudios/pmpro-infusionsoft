@@ -2,18 +2,18 @@
 Contributors: strangerstudios
 Tags: pmpro, paid memberships pro, infusionsoft, email marketing
 Requires at least: 4
-Tested up to: 5.3
+Tested up to: 5.4.1
 Stable tag: 1.4
 
 Sync your WordPress users and members with Infusionsoft groups and tags.
-
-If Paid Memberships Pro is installed you can sync users by membership level, otherwise all users can be synced to one or more groups.
 
 == Description ==
 
 Sync your WordPress users and members with Infusionsoft groups and tags.
 
 If Paid Memberships Pro is installed you can sync users by membership level, otherwise all users can be synced to one or more groups.
+
+[Read the full documentation for the Infusionsoft Add On](https://www.paidmembershipspro.com/add-ons/pmpro-infusionsoft-integration/)
 
 = Official Paid Memberships Pro Add On =
 
@@ -23,7 +23,7 @@ This is an official Add On for [Paid Memberships Pro](https://www.paidmembership
 
 1. Upload the `pmpro-infusionsoft` directory to the `/wp-content/plugins/` directory of your site.
 1. Activate the plugin through the 'Plugins' menu in WordPress.
-1. The settings page is at Settings --> PMPro Infusionsoft in the WP dashboard.
+1. The settings page is at Settings > PMPro Infusionsoft in the WP dashboard.
 
 == Frequently Asked Questions ==
 
@@ -40,7 +40,7 @@ Please visit our premium support site at http://www.paidmembershipspro.com for m
 1. Settings screen to add Infusionsoft Username/ID and API Key; Assign All Users Tags and per-Membership Level Tags.
 
 == Changelog ==
-= 1.4
+= 1.4 =
 * BUG FIX/ENHANCEMENT: If you have more than 1000 tags/groups, we will import them all into the settings page. We are using the select2 library to make it easier to search and add tags on those pages.
 * BUG: Checking if iSDK is already loaded before loading again to prevent conflicts with other plugins loading the SDK. Issues may still persist if the plugins load different versions of the SDK.
 
